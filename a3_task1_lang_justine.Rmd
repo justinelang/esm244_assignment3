@@ -1,0 +1,44 @@
+---
+title: "Assignment 3 Task 1"
+author: "Justine Lang"
+date: "2023-03-02"
+output: 
+  html_document: 
+    code_folding: hide
+---
+
+```{r setup, include=FALSE, echo = TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+library(tidyverse)
+library(here)
+library(janitor)
+library(ggfortify)
+```
+
+## Data Overview
+
+Text here
+
+```{r}
+### Read in the data
+
+env_vars <- read_csv(here("data", "world_env_vars.csv"))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
