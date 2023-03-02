@@ -26,8 +26,43 @@ Text here
 env_vars <- read_csv(here("data", "world_env_vars.csv"))
 ```
 
+```{r}
+### Visually inspect for NA's; wind has 55
 
+# summary(env_vars)
+```
 
+## Data Wrangling
+
+```{r}
+### Drop NA's, clean names, and set levels for accessibility_to_cities
+
+env_vars <- env_vars %>%
+  clean_names() %>%
+  drop_na() %>% 
+  mutate(accessibility_to_cities =
+                     case_when(accessibility_to_cities <= 100 ~ "Very High", 
+                              accessibility_to_cities <= 500 ~ "High",
+                              accessibility_to_cities <= 1000 ~ "Medium",
+                              accessibility_to_cities <= 11000 ~ "Low")) %>% 
+  mutate(accessibility_to_cities = factor(accessibility_to_cities, levels = c('Low', 'Medium', 'High', 'Very High')))
+
+# glimpse(env_vars)
+```
+
+```{r}
+### Select variables of interest and scale
+
+env_vars_pca <- env_vars %>%
+  select(cropland_cover, tree_canopy_cover, rain_mean_annual, temp_mean_annual, temp_annual_range, wind, cloudiness) %>% 
+  dplyr::select(where(is.numeric)) %>%
+  scale() %>%
+  prcomp()
+
+### See the loadings
+
+# env_vars_pca$rotation
+```
 
 
 
