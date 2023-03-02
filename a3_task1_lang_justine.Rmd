@@ -65,6 +65,22 @@ env_vars_pca <- env_vars %>%
 ```
 
 
+## Biplot
+
+```{r}
+autoplot(env_vars_pca,
+     	data = env_vars,
+     	loadings = TRUE,
+     	colour = 'accessibility_to_cities',
+     	loadings.label = TRUE,
+     	loadings.colour = "black",
+     	loadings.label.colour = "black",
+     	loadings.label.vjust = -0.5
+     	) +
+  scale_color_manual(values = c('red', 'orange', 'yellowgreen', 'darkgreen')) +
+  scale_fill_manual(values = c('red', 'orange', 'yellowgreen', 'darkgreen')) +
+  theme_minimal()
+```
 
 
 
