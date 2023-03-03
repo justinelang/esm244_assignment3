@@ -18,7 +18,18 @@ library(ggfortify)
 
 ## Data Overview
 
-Explain data and variables
+In an exploration of country-level environmental and climatic variables, we performed a principal component analysis (PCA) on seven variables of interest in relation to the level of accessibility of cities. These data were acquired through the Google Earth Engine and were compiled and provided by zander_venter on Kaggle. Most of the data was derived by calculating the mean for each country at a reduction scale of about 10km.
+
+Variables of interest:
+
+- cropland cover
+- tree canopy cover 
+- mean annual rainfall
+- mean annual temperature
+- annual temperature range
+- wind
+- cloudiness
+
 
 ```{r}
 ### Read in the data
@@ -29,7 +40,7 @@ env_vars <- read_csv(here("data", "world_env_vars.csv"))
 
 ## Data Wrangling
 
-Explain methods
+To further limit observations, listwise deletion was utilized. NA values were dropped before variable selection, limiting the observations from 243 to 188. 
 
 ```{r}
 ### Drop NA's, clean names, and set levels for accessibility_to_cities
@@ -46,6 +57,9 @@ env_vars <- env_vars %>%
 
 # glimpse(env_vars)
 ```
+
+
+For the PCA, only continuous numeric data was kept. All numeric variables were rescaled to have a mean 0 and sd 1.
 
 ```{r}
 ### Select variables of interest and scale
@@ -64,8 +78,7 @@ env_vars_pca <- env_vars %>%
 
 ## Biplot
 
-```{r}
-### add caption
+```{r figure 1, fig.align='center', fig.cap="Figure 1: PCA biplot for seven country-level environmental and climatic variables. The arrows represent the loadings for PC 1 and PC 2, which together explain 69.6% of the variance. Each point, which indicates the level of accessibility to cities, is an observation based on the first two principal components."}
 
 autoplot(env_vars_pca,
      	data = env_vars,
@@ -75,7 +88,9 @@ autoplot(env_vars_pca,
      	loadings.colour = "black",
      	loadings.label.colour = "black",
      	loadings.label.vjust = -0.5
-     	) +
+     	) + 
+  ggtitle("World Environmental Variables PCA") +
+  guides(color = guide_legend(title = "Accessibility to Cities")) +
   scale_color_manual(values = c('red', 'orange', 'yellowgreen', 'darkgreen')) +
   scale_fill_manual(values = c('red', 'orange', 'yellowgreen', 'darkgreen')) +
   theme_minimal()
@@ -84,33 +99,39 @@ autoplot(env_vars_pca,
 
 ## Screeplot
 
-```{r}
-### add caption
+```{r figure 2, fig.align='center', fig.cap="Figure 2: PCA screeplot for the country-level environmental variables. The first three PCs explain roughly 83% of the variance."}
 
 sd_vec <- env_vars_pca$sdev
-var_vec <- sd_vec^2 ### standard deviation is sqrt of variance!
+var_vec <- sd_vec^2 ### standard deviation is sqrt of variance
 pc_names <- colnames(env_vars_pca$rotation)
 pct_expl_df <- data.frame(v = var_vec,
                           pct_v = var_vec / sum(var_vec),
                           pc = fct_inorder(pc_names)) %>%
   mutate(pct_lbl = paste0(round(pct_v*100, 1), '%'))
 ggplot(pct_expl_df, aes(x = pc, y = v)) +
-  geom_col(color = "navyblue", fill = "lightblue") +
-  ggtitle("Screeplot for World Environmental Variables")+
+  geom_col(color = "blue4", fill = "darkturquoise") +
+  ggtitle("World Environmental Variables Screeplot")+
   geom_text(aes(label = pct_lbl), vjust = 0, nudge_y = .002) +
-  labs(x = 'Principal component', y = 'Variance explained')+
+  labs(x = 'Dimensions', y = 'Percentage of explained variances')+
   theme_minimal()
 ```
 
 
 ## Summary
 
-Main points here. 
+Based on these figures:
+
+* Mean annual temperature and cropland cover are negatively correlated. These two variables also have fairly long arrows, indicating larger variance.
+* Mean annual rainfall and canopy cover are the most closely correlated; more rain is correlated with more canopy. 
+* Wind has the shortest arrow, indicating less variance. It is also negatively correlated with mean annual rainfall and canopy cover. 
+* There may be some clustering of the "Very High" accessibility observations, as seen around the cropland cover arrow, but otherwise clustering is not very obvious. There may not be a strong relationship between these variables and city accessibility. 
+* The screeplot indicates three PCAs explain more than 80% of the variance. This may be a good cutoff point, beyond which additional components may not be as useful.
 
 
 ## Citation
 
-Data citation here. 
+zander_vender. 2018, Environmental variables for world countries. CC0:Public Domain. https://www.kaggle.com/datasets/zanderventer/environmental-variables-for-world-countries?select=World_countries_env_vars.csv
+ 
 
 
 
