@@ -18,7 +18,7 @@ library(ggfortify)
 
 ## Data Overview
 
-Text here
+Explain data and variables
 
 ```{r}
 ### Read in the data
@@ -26,13 +26,10 @@ Text here
 env_vars <- read_csv(here("data", "world_env_vars.csv"))
 ```
 
-```{r}
-### Visually inspect for NA's; wind has 55
-
-# summary(env_vars)
-```
 
 ## Data Wrangling
+
+Explain methods
 
 ```{r}
 ### Drop NA's, clean names, and set levels for accessibility_to_cities
@@ -61,13 +58,15 @@ env_vars_pca <- env_vars %>%
 
 ### See the loadings
 
-# env_vars_pca$rotation
+ # env_vars_pca$rotation
 ```
 
 
 ## Biplot
 
 ```{r}
+### add caption
+
 autoplot(env_vars_pca,
      	data = env_vars,
      	loadings = TRUE,
@@ -83,8 +82,35 @@ autoplot(env_vars_pca,
 ```
 
 
+## Screeplot
+
+```{r}
+### add caption
+
+sd_vec <- env_vars_pca$sdev
+var_vec <- sd_vec^2 ### standard deviation is sqrt of variance!
+pc_names <- colnames(env_vars_pca$rotation)
+pct_expl_df <- data.frame(v = var_vec,
+                          pct_v = var_vec / sum(var_vec),
+                          pc = fct_inorder(pc_names)) %>%
+  mutate(pct_lbl = paste0(round(pct_v*100, 1), '%'))
+ggplot(pct_expl_df, aes(x = pc, y = v)) +
+  geom_col(color = "navyblue", fill = "lightblue") +
+  ggtitle("Screeplot for World Environmental Variables")+
+  geom_text(aes(label = pct_lbl), vjust = 0, nudge_y = .002) +
+  labs(x = 'Principal component', y = 'Variance explained')+
+  theme_minimal()
+```
 
 
+## Summary
+
+Main points here. 
+
+
+## Citation
+
+Data citation here. 
 
 
 
