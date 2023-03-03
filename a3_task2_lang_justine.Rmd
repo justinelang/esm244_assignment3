@@ -1,0 +1,111 @@
+---
+title: "Assignment 3 Task 2"
+author: "Justine Lang"
+date: "2023-03-03"
+output: 
+  html_document: 
+    code_folding: hide
+---
+
+```{r setup, echo = TRUE, warning = FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+library(tidyverse)
+library(here)
+library(janitor)
+library(NbClust)
+library(cluster)
+library(factoextra)
+library(dendextend)
+library(ggdendro)
+```
+
+## Data Overview
+
+Text here.
+
+```{r}
+### Read in the data
+
+stream_chem <- read_csv(here("data", "sbc_lter_registered_stream_chemistry.csv")) %>% 
+  mutate(across(where(is.numeric), ~na_if(., -999)))
+```
+
+
+## Data Wrangling
+
+Explain methods for dropping NA's
+
+```{r}
+### Identify columns with >50% NA's
+
+# summary(stream_chem)
+
+### tpc_uM, tpn_uM, tpp_uM, and tss_mgperLiter have >50% NA's and will be dropped
+
+stream_chem_sub <- stream_chem %>% 
+  select(-timestamp_local, -tpc_uM, -tpn_uM, -tpp_uM, -tss_mgperLiter) %>% 
+  group_by(site_code) %>% ### grouping by site
+  summarize(
+    "Ammonium" = mean(nh4_uM, na.rm = TRUE), ### finding the mean of each chemical indicator across each site
+    "Nitrate" = mean(no3_uM, na.rm = TRUE),
+    "Phosphorous" = mean(po4_uM, na.rm = TRUE),
+    "Dissolved nitrogen" = mean(tdn_uM, na.rm = TRUE),
+    "Dissolved phosphorous" = mean(tdp_uM, na.rm = TRUE),
+    "Specific conductivity" = mean(spec_cond_uSpercm, na.rm = TRUE)) %>% 
+  drop_na()
+```
+
+
+## Hierarchical Clustering
+
+```{r}
+### Add figure caption
+
+### Scale the data
+
+stream_scaled <- stream_chem_sub %>% 
+  select(2:7) %>% ### Remove stream code so we can scale only numbers
+  scale()
+
+### Add the stream code back in as a row name
+
+rownames(stream_scaled) <- stream_chem_sub$site_code
+
+### Euclidean distance
+
+euc_distance <- dist(stream_scaled, method = "euclidean")
+
+# euc_distance
+
+### Perform hierarchical clustering by complete linkage with `stats::hclust()`
+
+hc_complete <- hclust(euc_distance, method = "complete")
+
+## Plot it
+
+ggdendrogram(hc_complete, 
+             rotate = TRUE) + 
+  theme_minimal() + 
+  labs(x = "Stream Code", y = "Euclidian Distance") + 
+  ggtitle("Complete Linkage Hierarchical Clustering Dendrogram")
+```
+
+
+### Summary
+
+Text here
+
+
+### Citation
+
+Data citation here. 
+
+
+
+
+
+
+
+
+
