@@ -22,10 +22,11 @@ library(ggdendro)
 
 ## Data Overview
 
-Text here.
+This analysis explored hierarchical clustering for stream water chemistry measurements by site in the Santa Barbara County watershed. Since 2000, data were collected weekly during non-storm flows in winter and bi-weekly during the summer. Variables include dissolved nitrogen; soluble reactive phosphorus; particulate organic carbon, nitrogen and phosphorus; total suspended sediments; and conductivity. (Santa Barbara Coastal LTER & Melack, 2019). This analysis utilized complete linkage clustering to create a dendrogram that measures dissimilarity among water chemistry at stream site. 
+
 
 ```{r}
-### Read in the data
+### Read in the data; convert -999 values to NA's
 
 stream_chem <- read_csv(here("data", "sbc_lter_registered_stream_chemistry.csv")) %>% 
   mutate(across(where(is.numeric), ~na_if(., -999)))
@@ -34,7 +35,7 @@ stream_chem <- read_csv(here("data", "sbc_lter_registered_stream_chemistry.csv")
 
 ## Data Wrangling
 
-Explain methods for dropping NA's
+Since this data set contains many NA values, any columns with more than 50% NA's were considered to not provide much information and were dropped. To avoid dropping certain sites from the analysis, pairwise deletion was then used on the remaining observations; sites were summarized and then NA's were dropped. 
 
 ```{r}
 ### Identify columns with >50% NA's
@@ -45,9 +46,9 @@ Explain methods for dropping NA's
 
 stream_chem_sub <- stream_chem %>% 
   select(-timestamp_local, -tpc_uM, -tpn_uM, -tpp_uM, -tss_mgperLiter) %>% 
-  group_by(site_code) %>% ### grouping by site
+  group_by(site_code) %>% ### Group by site
   summarize(
-    "Ammonium" = mean(nh4_uM, na.rm = TRUE), ### finding the mean of each chemical indicator across each site
+    "Ammonium" = mean(nh4_uM, na.rm = TRUE), ### Find mean chemical indicator across each site
     "Nitrate" = mean(no3_uM, na.rm = TRUE),
     "Phosphorous" = mean(po4_uM, na.rm = TRUE),
     "Dissolved nitrogen" = mean(tdn_uM, na.rm = TRUE),
@@ -59,13 +60,12 @@ stream_chem_sub <- stream_chem %>%
 
 ## Hierarchical Clustering
 
-```{r}
-### Add figure caption
+```{r figure 1, fig.align='center', fig.cap="Figure 1: Dendrogram of stream chemistry in Santa Barbara County by site. Hierarchical clustering utilized complete linkage and Euclidean distance."}
 
 ### Scale the data
 
 stream_scaled <- stream_chem_sub %>% 
-  select(2:7) %>% ### Remove stream code so we can scale only numbers
+  select(2:7) %>% ### Remove stream code to scale only numbers
   scale()
 
 ### Add the stream code back in as a row name
@@ -78,28 +78,32 @@ euc_distance <- dist(stream_scaled, method = "euclidean")
 
 # euc_distance
 
-### Perform hierarchical clustering by complete linkage with `stats::hclust()`
+#### Perform hierarchical clustering by complete linkage
 
 hc_complete <- hclust(euc_distance, method = "complete")
 
 ## Plot it
 
-ggdendrogram(hc_complete, 
-             rotate = TRUE) + 
-  theme_minimal() + 
-  labs(x = "Stream Code", y = "Euclidian Distance") + 
-  ggtitle("Complete Linkage Hierarchical Clustering Dendrogram")
+ggdendrogram(hc_complete,
+             rotate = TRUE) +
+  theme_minimal() +
+  labs(x = "Site Code", y = "Euclidian Distance")+
+  ggtitle("Complete Linkage Cluster Dendrogram")
 ```
 
 
-### Summary
+## Summary
 
-Text here
+* Site DV01 has its own branch, which suggests it is most dissimilar from the other stream sites.
+* More closely nested sites, like SP02 and MC00 or RS02 and HO00, suggest similarities in water chemistry. 
+* Cutting the dendrogram at different distances reveals different clusters, which could be helpful for future investigation of the similarities and dissimilarities between the sites and of the water quality variables that result in the more nested clusters. 
 
 
-### Citation
+## Citation
 
-Data citation here. 
+Santa Barbara Coastal LTER and J. Melack. 2019. SBC LTER: Land: Stream chemistry in the Santa Barbara Coastal drainage area, ongoing since 2000 ver 16. Environmental Data Initiative
+
+
 
 
 
